@@ -1,0 +1,1 @@
+Trading System built in Python
