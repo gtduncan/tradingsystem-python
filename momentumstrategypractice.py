@@ -5,14 +5,14 @@ import xlsxwriter
 import math
 from scipy import stats 
 from statistics import mean
-from secret.APIkey import IPX_CLOUD_API_TOKEN  
+from secret.APIkey import IEX_CLOUD_API_TOKEN  
 
 # Practice #1
 
 # stocks = pd.read_csv('sp_500_stocks.csv')
 
 # symbol = 'AAPL'
-# api_url = f'https://cloud.iexapis.com/stable/stock/{symbol}/quote?token=pk_8d7ed99478374eb288c90d609f8635a4'
+# api_url = f'https://cloud.iexapis.com/stable/stock/{symbol}/quote?token={IEX}'
 # data = requests.get(api_url).json()
 # price = data['latestPrice']
 # market_cap = data['marketCap']
@@ -143,7 +143,7 @@ hqm_columns = [
 hqm_dataframe = pd.DataFrame(columns=hqm_columns)
 
 for symbol_string in symbol_strings:
-    api_url = f"https://cloud.iexapis.com/stable/stock/market/batch?symbols={symbol_string}&types=stats,price&token={IPX_CLOUD_API_TOKEN}"
+    api_url = f"https://cloud.iexapis.com/stable/stock/market/batch?symbols={symbol_string}&types=stats,price&token={IEX_CLOUD_API_TOKEN}"
     data = requests.get(api_url).json()
     for symbol in symbol_string.split(','):
         new_row = pd.DataFrame(
