@@ -5,6 +5,7 @@ import xlsxwriter
 import math
 from scipy import stats 
 from statistics import mean
+from APIkey import IPX_CLOUD_API_TOKEN  
 
 # Practice #1
 
@@ -83,8 +84,6 @@ from statistics import mean
 # print(final_dataframe)
 
 stocks = pd.read_csv('sp_500_stocks.csv')
-
-IPX_CLOUD_API_TOKEN = 'pk_8d7ed99478374eb288c90d609f8635a4'
 
 def chunks(lst, n):
     for i in range(0, len(lst), n):
