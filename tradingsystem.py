@@ -5,7 +5,7 @@ import xlsxwriter
 import math
 from scipy import stats 
 from statistics import mean
-from APIkey import IPX_CLOUD_API_TOKEN  
+from secret.APIkey import IPX_CLOUD_API_TOKEN  
 
 # Practice #1
 
