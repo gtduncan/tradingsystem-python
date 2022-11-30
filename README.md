@@ -1,1 +1,3 @@
-Trading System built in Python
+# Trading System built in Python
+
+## By George Duncan
