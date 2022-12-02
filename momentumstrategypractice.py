@@ -194,8 +194,6 @@ position_size = float(portfolio_size)/len(hqm_dataframe.index)
 for i in range(0, len(hqm_dataframe.index)):
     hqm_dataframe.loc[i, 'Number of Shares to Buy'] = math.floor(position_size/hqm_dataframe.loc[i, 'Price'])
 
-print(hqm_dataframe)
-
 writer = pd.ExcelWriter('momentum_strategy.xlsx', engine = 'xlsxwriter')
 hqm_dataframe.to_excel(writer, sheet_name='Momentum Strategy', index = False)
 

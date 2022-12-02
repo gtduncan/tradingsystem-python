@@ -5,7 +5,7 @@ import requests
 from scipy import stats
 from statistics import mean
 import math
-from secret.APIkey import IEX_CLOUD_API_TOKEN  
+from secret.APIkey import IEX_CLOUD_API_TOKEN 
 
 stocks = pd.read_csv('sp_500_stocks.csv')
 
@@ -159,8 +159,6 @@ position_size = float(portfolio_size)/len(rv_dataframe.index)
 
 for row in rv_dataframe.index:
     rv_dataframe.loc[row, 'Number of Shares to Buy'] = math.floor(position_size/rv_dataframe.loc[row, 'Price'])
-
-print(rv_dataframe)
 
 writer = pd.ExcelWriter('value_strategy.xlsx', engine='xlsxwriter')
 rv_dataframe.to_excel(writer, sheet_name='Value Strategy', index=False)
