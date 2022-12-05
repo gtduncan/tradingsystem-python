@@ -116,19 +116,9 @@ for i in range(0, len(symbol_groups)):
 # final_dataframe = final_dataframe[:50]
 # final_dataframe.reset_index(inplace=True)
 
-def portfolio_input():
-    global portfolio_size
-    portfolio_size = input('Enter the value of your portfolio:')
-    try:
-        float(portfolio_size)
-    except ValueError:
-        print("That's not a number! \n Please try again.")
-        portfolio_size = input('Enter the value of your portfolio:')
-
 hqm_columns = [
     'Ticker',
     'Price',
-    'Number of Shares to Buy',
     'One-Year Price Return',
     'One-Year Return Percentile',
     'Six-Month Price Return',
@@ -150,7 +140,6 @@ for symbol_string in symbol_strings:
         {
             'Ticker': [symbol],
             'Price': [data[symbol]['price']],
-            'Number of Shares to Buy': 'N/A',
             'One-Year Price Return': [data[symbol]['stats']['year1ChangePercent']],
             'One-Year Return Percentile': 'N/A',
             'Six-Month Price Return': [data[symbol]['stats']['month6ChangePercent']],
@@ -186,13 +175,6 @@ for row in hqm_dataframe.index:
 hqm_dataframe.sort_values('HQM Score', ascending=False, inplace=True)
 hqm_dataframe = hqm_dataframe[:50]
 hqm_dataframe.reset_index(inplace=True, drop=True)
-
-portfolio_input()
-
-position_size = float(portfolio_size)/len(hqm_dataframe.index)
-
-for i in range(0, len(hqm_dataframe.index)):
-    hqm_dataframe.loc[i, 'Number of Shares to Buy'] = math.floor(position_size/hqm_dataframe.loc[i, 'Price'])
 
 writer = pd.ExcelWriter('momentum_strategy.xlsx', engine = 'xlsxwriter')
 hqm_dataframe.to_excel(writer, sheet_name='Momentum Strategy', index = False)
@@ -238,16 +220,15 @@ percent_format = writer.book.add_format(
 column_formats = {
     'A': ['Ticker', string_format],
     'B': ['Price', dollar_format],
-    'C': ['Number of Shares to Buy', integer_format],
-    'D': ['One-Year Price Return', percent_format],
-    'E': ['One-Year Return Percentile', percent_format],
-    'F': ['Six-Month Price Return', percent_format],
-    'G': ['Six-Month Return Percentile', percent_format],
-    'H': ['Three-Month Price Return', percent_format],
-    'I': ['Three-Month Return Percentile', percent_format],
-    'J': ['One-Month Price Return', percent_format],
-    'K': ['One-Month Return Percentile', percent_format],
-    'L': ['HQM Score', percent_format]
+    'C': ['One-Year Price Return', percent_format],
+    'D': ['One-Year Return Percentile', percent_format],
+    'E': ['Six-Month Price Return', percent_format],
+    'F': ['Six-Month Return Percentile', percent_format],
+    'G': ['Three-Month Price Return', percent_format],
+    'H': ['Three-Month Return Percentile', percent_format],
+    'I': ['One-Month Price Return', percent_format],
+    'J': ['One-Month Return Percentile', percent_format],
+    'K': ['HQM Score', percent_format]
 }
 
 for column in column_formats.keys():

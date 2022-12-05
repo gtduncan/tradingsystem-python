@@ -40,16 +40,6 @@ for i in range(0, len(symbol_groups)):
 # final_dataframe = final_dataframe[:50]
 # final_dataframe.reset_index(inplace=True, drop=True)
 
-def portfolio_input():
-    global portfolio_size
-    portfolio_size = input('Enter the value of your portfolio:')
-    try:
-        float(portfolio_size)
-    except ValueError:
-        print("That's not a number! \n Please try again.")
-        portfolio_size = input('Enter the value of your portfolio:')
-
-
 # print(final_dataframe)
 
 # Price-to-earnings ratio
@@ -77,7 +67,6 @@ def portfolio_input():
 rv_columns = [
     'Ticker',
     'Price',
-    'Number of Shares to Buy',
     'Price-to-Earnings Ratio',
     'PE Percentile',
     'Price-to-Book Ratio',
@@ -111,7 +100,6 @@ for symbol_string in symbol_strings:
         new_row = pd.DataFrame({
             'Ticker': [symbol],
             'Price': [data[symbol]['quote']['latestPrice']],
-            'Number of Shares to Buy': 'N/A',
             'Price-to-Earnings Ratio': [data[symbol]['quote']['peRatio']],
             'PE Percentile': 'N/A',
             'Price-to-Book Ratio': data[symbol]['advanced-stats']['priceToBook'],
@@ -128,8 +116,6 @@ for symbol_string in symbol_strings:
 
 for column in ['Price-to-Earnings Ratio', 'Price-to-Book Ratio', 'Price-to-Sales Ratio', 'EV/EBITDA', 'EV/GP']:
     rv_dataframe[column].fillna(rv_dataframe[column].mean(), inplace=True)
-
-print(rv_dataframe)
 
 metrics= {
     'Price-to-Earnings Ratio': 'PE Percentile',
@@ -152,13 +138,6 @@ for row in rv_dataframe.index:
 rv_dataframe.sort_values('RV Score', ascending=True, inplace=True)
 rv_dataframe = rv_dataframe[:50]
 rv_dataframe.reset_index(inplace=True, drop=True)
-
-portfolio_input()
-
-position_size = float(portfolio_size)/len(rv_dataframe.index)
-
-for row in rv_dataframe.index:
-    rv_dataframe.loc[row, 'Number of Shares to Buy'] = math.floor(position_size/rv_dataframe.loc[row, 'Price'])
 
 writer = pd.ExcelWriter('value_strategy.xlsx', engine='xlsxwriter')
 rv_dataframe.to_excel(writer, sheet_name='Value Strategy', index=False)
@@ -213,18 +192,17 @@ percent_format = writer.book.add_format(
 column_formats = {
     'A': ['Ticker', string_format],
     'B': ['Price', dollar_format],
-    'C': ['Number of Shares to Buy', integer_format],
-    'D': ['Price-to-Earnings Ratio', float_format],
-    'E': ['PE Percentile', percent_format],
-    'F': ['Price-to-Book Ratio', float_format],
-    'G': ['PB Percentile', percent_format],
-    'H': ['Price-to-Sales Ratio', float_format],
-    'I': ['PS Percentile', percent_format],
-    'J': ['EV/EDITBA', float_format],
-    'K': ['EV/EDITBA Percentile', percent_format],
-    'L': ['EV/GP', float_format],
-    'M': ['EV/GP Percentile', percent_format],
-    'N': ['RV Score', percent_format]
+    'C': ['Price-to-Earnings Ratio', float_format],
+    'D': ['PE Percentile', percent_format],
+    'E': ['Price-to-Book Ratio', float_format],
+    'F': ['PB Percentile', percent_format],
+    'G': ['Price-to-Sales Ratio', float_format],
+    'H': ['PS Percentile', percent_format],
+    'I': ['EV/EDITBA', float_format],
+    'J': ['EV/EDITBA Percentile', percent_format],
+    'K': ['EV/GP', float_format],
+    'L': ['EV/GP Percentile', percent_format],
+    'M': ['RV Score', percent_format]
 }
 
 for column in column_formats.keys():
