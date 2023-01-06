@@ -18,52 +18,6 @@ symbol_strings = []
 for i in range(0, len(symbol_groups)):
     symbol_strings.append(','.join(symbol_groups[i]))
 
-# my_columns = ['Ticker', 'Price', 'Price-to-Earnings Ratio', 'Number of Shares to Buy']
-
-# final_dataframe = pd.DataFrame(columns=my_columns)
-# final_dataframe
-
-# for symbol_string in symbol_strings:
-#     api_url = f"https://cloud.iexapis.com/stable/stock/market/batch?symbols={symbol_string}&types=quote&token={IEX_CLOUD_API_TOKEN}"
-#     data = requests.get(api_url).json()
-#     for symbol in symbol_string.split(','):
-#         new_row = pd.DataFrame({
-#             'Ticker': [symbol],
-#             'Price': [data[symbol]['quote']['latestPrice']],
-#             'Price-to-Earnings Ratio': [data[symbol]['quote']['peRatio']],
-#             'Number of Shares to Buy': 'N/A'
-#         })
-#         final_dataframe = pd.concat([final_dataframe, new_row], ignore_index=True)
-
-# final_dataframe.sort_values('Price-to-Earnings Ratio', inplace=True)
-# final_dataframe= final_dataframe[final_dataframe['Price-to-Earnings Ratio'] > 0]
-# final_dataframe = final_dataframe[:50]
-# final_dataframe.reset_index(inplace=True, drop=True)
-
-# print(final_dataframe)
-
-# Price-to-earnings ratio
-
-# pe_ratio = data[symbol]['quote']['peRatio']
-
-# # Price-to-book ratio
-
-# pb_ratio = data[symbol]['advanced-stats']['priceToBook']
-
-# # Price-to-sales ratio
-
-# ps_ratio = data[symbol]['advanced-stats']['priceToSales']
-
-# # Enterprise Value divided by Earnings Before Interest, Taxes, Depreciation, and Amortization (EV/EBITDA)
-
-# enterprise_value = data[symbol]['advanced-stats']['enterpriseValue']
-# ebitda = data[symbol]['advanced-stats']['EBITDA']
-# ev_to_ebitda = enterprise_value/ebitda
-
-# # Enterprise Value divided by Gross Profit (EV/GP)
-# gross_profit = data[symbol]['advanced-stats']['grossProfit']
-# ev_to_gross_profit = enterprise_value/gross_profit
-
 rv_columns = [
     'Ticker',
     'Price',
@@ -139,7 +93,7 @@ rv_dataframe.sort_values('RV Score', ascending=True, inplace=True)
 rv_dataframe = rv_dataframe[:50]
 rv_dataframe.reset_index(inplace=True, drop=True)
 
-writer = pd.ExcelWriter('value_strategy.xlsx', engine='xlsxwriter')
+writer = pd.ExcelWriter('excel/value_strategy.xlsx', engine='xlsxwriter')
 rv_dataframe.to_excel(writer, sheet_name='Value Strategy', index=False)
 
 background_color = '#ffffff'

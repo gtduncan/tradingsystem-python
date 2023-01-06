@@ -4,33 +4,61 @@ from momentumstrategypractice import hqm_dataframe
 from valuestrategypractice import rv_dataframe
 import sys
 import os
-from PyQt6.QtCore import QSize, Qt
-from PyQt6.QtWidgets import QApplication, QMainWindow, QPushButton
+from random import choice, randint
+from PyQt6 import QtWidgets, QtCore, QtGui, uic
+from ui.ui_trading_ui import Ui_StockTracker
 
-print('Both strategies include the following stocks as of today:')
+combo_columns = [
+    'Ticker',
+    'Price',
+    'HQM Ranking',
+    'RV Ranking',
+    'Mean Ranking'
+]
+
+combo_dataframe = pd.DataFrame(columns=combo_columns)
+
 for i in hqm_dataframe.index:
     for j in rv_dataframe.index:
         if hqm_dataframe.loc[i, 'Ticker'] == rv_dataframe.loc[j, 'Ticker']:
-            print(hqm_dataframe.loc[i, 'Ticker'], '(', 'HQM Ranking:', i+1, 'RV Ranking:', j+1, 'Mean:', ((i+1)+(j+1))/2, ')')
+            new_row = pd.DataFrame(
+                {
+                    'Ticker': [hqm_dataframe.loc[i, 'Ticker']] ,
+                    'Price': [hqm_dataframe.loc[i, 'Price']] ,
+                    'HQM Ranking': [i],
+                    'RV Ranking': [j],
+                    'Mean Ranking': [(((i+1)+(j+1))/2)]
+                }, )
+            combo_dataframe = pd.concat([combo_dataframe, new_row], ignore_index=True)
 
-class MainWindow(QMainWindow):
-    def __init__(self):
-        super().__init__()
+print(combo_dataframe)
 
-        self.setWindowTitle("My App")
-        button = QPushButton("Press Me!")
-
-        self.setMinimumSize(QSize(400, 300))
-        self.setMaximumSize(QSize(600, 500))
-
-        # Set the central widget of the Window.
-        self.setCentralWidget(button)
-
-
-app = QApplication(sys.argv)
-
-window = MainWindow()
-window.show()
-
-app.exec()
-
+class MainWindow(QtWidgets.QWidget, Ui_StockTracker):
+    def __init__(self, *args, obj=None, **kwargs):
+        super(MainWindow, self).__init__(*args, **kwargs)
+        self.setupUi(self)
+        self.setWindowTitle('Stock Tracker')
+        self.stockInfo.setReadOnly(True)
+        self.run.clicked.connect(self.button_clicked)
+    def button_clicked(self):
+        self.stockInfo.clear()
+        self.stockInfo.insertHtml('Both value-based and momentum-based strategies include the following stocks as of today: <br><br>')
+        for i in hqm_dataframe.index:
+            for j in rv_dataframe.index:
+                if hqm_dataframe.loc[i, 'Ticker'] == rv_dataframe.loc[j, 'Ticker']:
+                    self.stockInfo.insertHtml(str(hqm_dataframe.loc[i, 'Ticker']))
+                    self.stockInfo.insertHtml(': (HQM Ranking: ')
+                    self.stockInfo.insertHtml(str(i+1))
+                    self.stockInfo.insertHtml(', RV Ranking: ')
+                    self.stockInfo.insertHtml(str(j+1))
+                    self.stockInfo.insertHtml(', Mean: ')
+                    self.stockInfo.insertHtml(str(((i+1)+(j+1))/2))
+                    self.stockInfo.insertHtml(') <br>')
+                    # '(', 'HQM Ranking:', i+1, 'RV Ranking:', j+1, 'Mean:', ((i+1)+(j+1))/2, ')')
+    
+        
+if __name__ == "__main__":
+    app = QtWidgets.QApplication(sys.argv)
+    window = MainWindow()
+    window.show()
+    app.exec()
