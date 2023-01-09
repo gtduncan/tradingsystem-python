@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+import math
 from momentumstrategypractice import hqm_dataframe
 from valuestrategypractice import rv_dataframe
 import sys
@@ -24,13 +25,15 @@ for i in hqm_dataframe.index:
             new_row = pd.DataFrame(
                 {
                     'Ticker': [hqm_dataframe.loc[i, 'Ticker']] ,
-                    'Price': [hqm_dataframe.loc[i, 'Price']] ,
+                    'Price': ['${:,.2f}'.format(hqm_dataframe.loc[i, 'Price'])],
                     'HQM Ranking': [i],
                     'RV Ranking': [j],
                     'Mean Ranking': [(((i+1)+(j+1))/2)]
                 }, )
             combo_dataframe = pd.concat([combo_dataframe, new_row], ignore_index=True)
 
+combo_dataframe.sort_values(by=['Mean Ranking'], inplace=True)
+combo_dataframe.reset_index(inplace=True, drop=True)
 print(combo_dataframe)
 
 class MainWindow(QtWidgets.QWidget, Ui_StockTracker):
