@@ -14,7 +14,8 @@ combo_columns = [
     'Price',
     'HQM Ranking',
     'RV Ranking',
-    'Mean Ranking'
+    'Mean Ranking',
+    'Zacks Link'
 ]
 
 combo_dataframe = pd.DataFrame(columns=combo_columns)
@@ -22,13 +23,15 @@ combo_dataframe = pd.DataFrame(columns=combo_columns)
 for i in hqm_dataframe.index:
     for j in rv_dataframe.index:
         if hqm_dataframe.loc[i, 'Ticker'] == rv_dataframe.loc[j, 'Ticker']:
+            link = f"https://www.zacks.com/stock/quote/{hqm_dataframe.loc[i, 'Ticker']}?q={hqm_dataframe.loc[i, 'Ticker']}"
             new_row = pd.DataFrame(
                 {
                     'Ticker': [hqm_dataframe.loc[i, 'Ticker']] ,
                     'Price': ['${:,.2f}'.format(hqm_dataframe.loc[i, 'Price'])],
                     'HQM Ranking': [i],
                     'RV Ranking': [j],
-                    'Mean Ranking': [(((i+1)+(j+1))/2)]
+                    'Mean Ranking': [(((i+1)+(j+1))/2)],
+                    'Zacks Link': link
                 }, )
             combo_dataframe = pd.concat([combo_dataframe, new_row], ignore_index=True)
 
@@ -57,6 +60,9 @@ class MainWindow(QtWidgets.QWidget, Ui_StockTracker):
                     self.stockInfo.insertHtml(', Mean: ')
                     self.stockInfo.insertHtml(str(((i+1)+(j+1))/2))
                     self.stockInfo.insertHtml(') <br>')
+                    # self.stockInfo.insertHtml('<a href="')
+                    # self.stockInfo.insertHtml(link)
+                    # self.stockInfo.insertHtml('">Zacks Ranking</a>')
                     # '(', 'HQM Ranking:', i+1, 'RV Ranking:', j+1, 'Mean:', ((i+1)+(j+1))/2, ')')
     
         

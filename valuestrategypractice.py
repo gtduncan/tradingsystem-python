@@ -7,7 +7,7 @@ from statistics import mean
 import math
 from secret.APIkey import IEX_CLOUD_API_TOKEN 
 
-stocks = pd.read_csv('sp_500_stocks.csv')
+stocks = pd.read_csv('NASDAQ.csv')
 
 def chunks(lst, n):
     for i in range(0, len(lst), n):
@@ -40,36 +40,41 @@ for symbol_string in symbol_strings:
     api_url = f"https://cloud.iexapis.com/stable/stock/market/batch?symbols={symbol_string}&types=quote,advanced-stats&token={IEX_CLOUD_API_TOKEN}"
     data = requests.get(api_url).json()
     for symbol in symbol_string.split(','):
-        enterprise_value = data[symbol]['advanced-stats']['enterpriseValue']
-        ebitda = data[symbol]['advanced-stats']['EBITDA']
-        gross_profit = data[symbol]['advanced-stats']['grossProfit']
         try:
-            ev_to_ebitda = enterprise_value/ebitda
-        except TypeError:
-            ev_to_ebitda = np.NaN
-        try:
-            ev_to_gross_profit = enterprise_value/gross_profit
-        except TypeError:
-            ev_to_gross_profit = np.NaN
-        new_row = pd.DataFrame({
-            'Ticker': [symbol],
-            'Price': [data[symbol]['quote']['latestPrice']],
-            'Price-to-Earnings Ratio': [data[symbol]['quote']['peRatio']],
-            'PE Percentile': 'N/A',
-            'Price-to-Book Ratio': data[symbol]['advanced-stats']['priceToBook'],
-            'PB Percentile': 'N/A',
-            'Price-to-Sales Ratio': data[symbol]['advanced-stats']['priceToSales'],
-            'PS Percentile': 'N/A',
-            'EV/EBITDA': ev_to_ebitda,
-            'EV/EBITDA Percentile': 'N/A',
-            'EV/GP': ev_to_gross_profit,
-            'EV/GP Percentile': 'N/A',
-            'RV Score': 'N/A'
-        })
-        rv_dataframe = pd.concat([rv_dataframe, new_row], ignore_index=True)
+            enterprise_value = data[symbol]['advanced-stats']['enterpriseValue']
+            ebitda = data[symbol]['advanced-stats']['EBITDA']
+            gross_profit = data[symbol]['advanced-stats']['grossProfit']
+            try:
+                ev_to_ebitda = enterprise_value/ebitda
+            except TypeError:
+                ev_to_ebitda = np.NaN
+            try:
+                ev_to_gross_profit = enterprise_value/gross_profit
+            except TypeError:
+                ev_to_gross_profit = np.NaN
+            new_row = pd.DataFrame({
+                'Ticker': [symbol],
+                'Price': [data[symbol]['quote']['latestPrice']],
+                'Price-to-Earnings Ratio': [data[symbol]['quote']['peRatio']],
+                'PE Percentile': 'N/A',
+                'Price-to-Book Ratio': data[symbol]['advanced-stats']['priceToBook'],
+                'PB Percentile': 'N/A',
+                'Price-to-Sales Ratio': data[symbol]['advanced-stats']['priceToSales'],
+                'PS Percentile': 'N/A',
+                'EV/EBITDA': ev_to_ebitda,
+                'EV/EBITDA Percentile': 'N/A',
+                'EV/GP': ev_to_gross_profit,
+                'EV/GP Percentile': 'N/A',
+                'RV Score': 'N/A'
+            })
+            rv_dataframe = pd.concat([rv_dataframe, new_row], ignore_index=True)
+        except:
+            print('Could not access', symbol)
 
 for column in ['Price-to-Earnings Ratio', 'Price-to-Book Ratio', 'Price-to-Sales Ratio', 'EV/EBITDA', 'EV/GP']:
     rv_dataframe[column].fillna(rv_dataframe[column].mean(), inplace=True)
+
+rv_dataframe.dropna(subset='Price', inplace=True)
 
 metrics= {
     'Price-to-Earnings Ratio': 'PE Percentile',
@@ -90,7 +95,7 @@ for row in rv_dataframe.index:
     rv_dataframe.loc[row, 'RV Score'] = mean(value_percentiles)
 
 rv_dataframe.sort_values('RV Score', ascending=True, inplace=True)
-rv_dataframe = rv_dataframe[:50]
+rv_dataframe = rv_dataframe[:500]
 rv_dataframe.reset_index(inplace=True, drop=True)
 
 writer = pd.ExcelWriter('excel/value_strategy.xlsx', engine='xlsxwriter')

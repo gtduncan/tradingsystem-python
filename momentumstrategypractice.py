@@ -7,7 +7,8 @@ from scipy import stats
 from statistics import mean
 from secret.APIkey import IEX_CLOUD_API_TOKEN  
 
-stocks = pd.read_csv('sp_500_stocks.csv')
+stocks = pd.read_csv('NASDAQ.csv')
+stocks.dropna()
 
 def chunks(lst, n):
     for i in range(0, len(lst), n):
@@ -17,7 +18,6 @@ symbol_groups = list(chunks(stocks['Ticker'], 100))
 symbol_strings = []
 for i in range(0, len(symbol_groups)):
     symbol_strings.append(','.join(symbol_groups[i]))
-
 
 hqm_columns = [
     'Ticker',
@@ -39,22 +39,25 @@ for symbol_string in symbol_strings:
     api_url = f"https://cloud.iexapis.com/stable/stock/market/batch?symbols={symbol_string}&types=stats,price&token={IEX_CLOUD_API_TOKEN}"
     data = requests.get(api_url).json()
     for symbol in symbol_string.split(','):
-        new_row = pd.DataFrame(
-        {
-            'Ticker': [symbol],
-            'Price': [data[symbol]['price']],
-            'One-Year Price Return': [data[symbol]['stats']['year1ChangePercent']],
-            'One-Year Return Percentile': 'N/A',
-            'Six-Month Price Return': [data[symbol]['stats']['month6ChangePercent']],
-            'Six-Month Return Percentile': 'N/A',
-            'Three-Month Price Return': [data[symbol]['stats']['month3ChangePercent']],
-            'Three-Month Return Percentile': 'N/A',
-            'One-Month Price Return': [data[symbol]['stats']['month1ChangePercent']],
-            'One-Month Return Percentile': 'N/A',
-            'HQM Score': 'N/A'
-        },
-        )
-        hqm_dataframe = pd.concat([hqm_dataframe, new_row], ignore_index=True)
+        try:
+            new_row = pd.DataFrame(
+            {
+                'Ticker': [symbol],
+                'Price': [data[symbol]['price']],
+                'One-Year Price Return': [data[symbol]['stats']['year1ChangePercent']],
+                'One-Year Return Percentile': 'N/A',
+                'Six-Month Price Return': [data[symbol]['stats']['month6ChangePercent']],
+                'Six-Month Return Percentile': 'N/A',
+                'Three-Month Price Return': [data[symbol]['stats']['month3ChangePercent']],
+                'Three-Month Return Percentile': 'N/A',
+                'One-Month Price Return': [data[symbol]['stats']['month1ChangePercent']],
+                'One-Month Return Percentile': 'N/A',
+                'HQM Score': 'N/A'
+         },
+            )
+            hqm_dataframe = pd.concat([hqm_dataframe, new_row], ignore_index=True)
+        except KeyError:
+            print('Could not access', symbol)
 
 time_periods = [
     'One-Year',
@@ -63,20 +66,32 @@ time_periods = [
     'One-Month'
 ]
 
-for row in hqm_dataframe.index:
-    for time_period in time_periods:
-        change_col = f'{time_period} Price Return'
-        percentile_col = f'{time_period} Return Percentile'
-        hqm_dataframe.loc[row, percentile_col] = stats.percentileofscore(hqm_dataframe[change_col], hqm_dataframe.loc[row, change_col])/100
+for column in ['One-Year Price Return', 'Six-Month Price Return', 'Three-Month Price Return', 'One-Month Price Return']:
+    hqm_dataframe[column].fillna(hqm_dataframe[column].mean(), inplace=True)
+
+hqm_dataframe.dropna(subset='Price', inplace=True)
 
 for row in hqm_dataframe.index:
-    momentum_percentiles = []
     for time_period in time_periods:
-        momentum_percentiles.append(hqm_dataframe.loc[row, f'{time_period} Return Percentile'])
-    hqm_dataframe.loc[row, 'HQM Score'] = mean(momentum_percentiles)
+        try:
+            change_col = f'{time_period} Price Return'
+            percentile_col = f'{time_period} Return Percentile'
+            hqm_dataframe.loc[row, percentile_col] = stats.percentileofscore(hqm_dataframe[change_col], hqm_dataframe.loc[row, change_col])/100
+        except:
+            print('Could not calculate', row)
+
+for row in hqm_dataframe.index:
+    try:
+        momentum_percentiles = []
+        for time_period in time_periods:
+            momentum_percentiles.append(hqm_dataframe.loc[row, f'{time_period} Return Percentile'])
+        print(momentum_percentiles)
+        hqm_dataframe.loc[row, 'HQM Score'] = mean(momentum_percentiles)
+    except:
+        print(row, ' failed')
 
 hqm_dataframe.sort_values('HQM Score', ascending=False, inplace=True)
-hqm_dataframe = hqm_dataframe[:50]
+hqm_dataframe = hqm_dataframe[:500]
 hqm_dataframe.reset_index(inplace=True, drop=True)
 
 writer = pd.ExcelWriter('excel/momentum_strategy.xlsx', engine = 'xlsxwriter')
